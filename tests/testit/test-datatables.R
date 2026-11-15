@@ -232,11 +232,21 @@ assert("buttons load", {
 })
 
 assert('slider bounds are written with a decimal point whatever OutDec is', {
-  op = options(OutDec = ',', scipen = -5)
-  html = datatable(data.frame(x = c(1.25, 10.5), y = c(1e5, 2e5)), filter = 'top')$x$filterHTML
+  bounds = function(d, ...) {
+    h = datatable(d, ...)$x$filterHTML
+    sub('^data-m..="(.*)"$', '\\1', regmatches(h, gregexpr('data-m(in|ax)="[^"]*"', h))[[1]])
+  }
+  op = options(OutDec = ',', scipen = 0)
+  b1 = bounds(data.frame(x = c(1.25, 10.5)), filter = 'top')
+  # 16-digit whole numbers keep every digit, as as.character() writes them
+  b2 = bounds(data.frame(id = c(1234567890123456, 1234567890123999)), filter = 'top')
+  h3 = datatable(data.frame(x = c(1.25, 10.5)), filter = list(position = 'top', opacity = 0.5))$x$filterHTML
+  options(scipen = -5)
+  b4 = bounds(data.frame(x = c(1.25, 10.5), y = c(1e5, 2e5)), filter = 'top')
   options(op)
-  (grepl('data-min="1.25"', html, fixed = TRUE))
-  (grepl('data-max="10.5"', html, fixed = TRUE))
-  (grepl('data-min="100000"', html, fixed = TRUE))
-  (!grepl('data-m(in|ax)="[^"]*,', html))
+  (b1 %==% c('1.25', '10.5'))
+  (b2 %==% c('1234567890123456', '1234567890123999'))
+  (grepl('opacity: 0.5', h3, fixed = TRUE))
+  (!any(grepl(',', b4, fixed = TRUE)))
+  (as.numeric(b4) %==% c(1.25, 10.5, 1e5, 2e5))
 })

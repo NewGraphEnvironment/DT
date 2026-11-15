@@ -756,6 +756,9 @@ columnFilters = function(data) {
 columnFilterRow = function(filters, options = list()) {
   defaults = list(clear = TRUE, plain = FALSE, vertical = FALSE, opacity = 1)
   options = modifyList(defaults, options)
+  # a number as as.character() writes it, but with a decimal point: as.character() follows
+  # options(OutDec), and neither JavaScript nor CSS can read a decimal comma
+  num = function(x) gsub(getOption('OutDec'), '.', as.character(x), fixed = TRUE)
 
   tds = lapply(filters, function(f) {
     p = f$params
@@ -763,16 +766,8 @@ columnFilterRow = function(filters, options = list()) {
     # create HTML for the control element
     ctrl = if (f$control == 'slider') {
       tags$div(
-        style = paste0('display: none;position: absolute;width: 200px;opacity: ', options$opacity),
-        # sprintf() rather than as.character() (which htmltools would use), since the
-        # latter follows options(OutDec) and JavaScript cannot read a decimal comma;
-        # as.numeric() first, as sprintf() reads the raw bits of a classed number such
-        # as bit64::integer64
-        tags$div(
-          `data-min` = sprintf('%.15g', as.numeric(p$min)),
-          `data-max` = sprintf('%.15g', as.numeric(p$max)),
-          `data-scale` = p$scale
-        ),
+        style = paste0('display: none;position: absolute;width: 200px;opacity: ', num(options$opacity)),
+        tags$div(`data-min` = num(p$min), `data-max` = num(p$max), `data-scale` = p$scale),
         if (options$vertical) tagList(
           tags$span(style = 'position: absolute; bottom: 0px; left: 15px;'),
           tags$span(style = 'display: none;', HTML('&nbsp;')),
