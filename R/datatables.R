@@ -764,7 +764,12 @@ columnFilterRow = function(filters, options = list()) {
     ctrl = if (f$control == 'slider') {
       tags$div(
         style = paste0('display: none;position: absolute;width: 200px;opacity: ', options$opacity),
-        tags$div(`data-min` = p$min, `data-max` = p$max, `data-scale` = p$scale),
+        # sprintf() rather than as.character() (which htmltools would use), since the
+        # latter follows options(OutDec) and JavaScript cannot read a decimal comma
+        tags$div(
+          `data-min` = sprintf('%.15g', p$min), `data-max` = sprintf('%.15g', p$max),
+          `data-scale` = p$scale
+        ),
         if (options$vertical) tagList(
           tags$span(style = 'position: absolute; bottom: 0px; left: 15px;'),
           tags$span(style = 'display: none;', HTML('&nbsp;')),

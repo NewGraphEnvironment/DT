@@ -230,3 +230,13 @@ assert("buttons load", {
   (out$x$extensions[[1]][1] %==% "Buttons")
   (unlist(out$x$options$buttons) %==% c("excel", "csv", "pdf"))
 })
+
+assert('slider bounds are written with a decimal point whatever OutDec is', {
+  op = options(OutDec = ',', scipen = -5)
+  html = datatable(data.frame(x = c(1.25, 10.5), y = c(1e5, 2e5)), filter = 'top')$x$filterHTML
+  options(op)
+  (grepl('data-min="1.25"', html, fixed = TRUE))
+  (grepl('data-max="10.5"', html, fixed = TRUE))
+  (grepl('data-min="100000"', html, fixed = TRUE))
+  (!grepl('data-m(in|ax)="[^"]*,', html))
+})
