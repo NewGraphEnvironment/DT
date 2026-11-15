@@ -765,9 +765,12 @@ columnFilterRow = function(filters, options = list()) {
       tags$div(
         style = paste0('display: none;position: absolute;width: 200px;opacity: ', options$opacity),
         # sprintf() rather than as.character() (which htmltools would use), since the
-        # latter follows options(OutDec) and JavaScript cannot read a decimal comma
+        # latter follows options(OutDec) and JavaScript cannot read a decimal comma;
+        # as.numeric() first, as sprintf() reads the raw bits of a classed number such
+        # as bit64::integer64
         tags$div(
-          `data-min` = sprintf('%.15g', p$min), `data-max` = sprintf('%.15g', p$max),
+          `data-min` = sprintf('%.15g', as.numeric(p$min)),
+          `data-max` = sprintf('%.15g', as.numeric(p$max)),
           `data-scale` = p$scale
         ),
         if (options$vertical) tagList(
